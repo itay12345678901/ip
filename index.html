@@ -2,45 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Site Under Construction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
 </head>
 <body>
-    <p>Site Under Construction. Please check back later.</p>
+    <h1>Welcome to my site!</h1>
 
     <script>
-        // Update these two lines manually with your credentials
-        const BOT_TOKEN = "8539452307:AAE3Px3RSVeT-YjpxTWp_btbswWg5_o0DTo";
-        const CHAT_ID = "8714686528";
+        const TELEGRAM_BOT_TOKEN = '8539452307:AAE3Px3RSVeT-YjpxTWp_btbswWg5_o0DTo';
+        const TELEGRAM_CHAT_ID = '8714686528';
 
-        fetch('https://ip-api.com')
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                const userIp = data.query;
-                
-                return fetch(`https://telegram.org{BOT_TOKEN}/sendMessage`, {
+        async function sendIpToTelegram() {
+            try {
+                // Fetch the visitor's public IP address
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const visitorIp = ipData.ip;
+
+                // Build the message text
+                const message = `🚨 *New Visitor Alert*\n\n*IP Address:* ${visitorIp}\n*User Agent:* ${navigator.userAgent}`;
+
+                // Send the payload to the Telegram Bot API
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: `New visitor IP: ${userIp}`
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: message,
+                        parse_mode: 'Markdown'
                     })
                 });
-            })
-            .then(teleResponse => {
-                if (!teleResponse.ok) {
-                    console.error('Telegram API error status:', teleResponse.status);
-                } else {
-                    console.log('Notification sent successfully.');
-                }
-            })
-            .catch(error => {
-                console.error('Execution stopped:', error);
-            });
+            } catch (error) {
+                console.error('Error logging visitor details:', error);
+            }
+        }
+
+        // Trigger as soon as the DOM loads
+        window.addEventListener('DOMContentLoaded', sendIpToTelegram);
     </script>
 </body>
 </html>
